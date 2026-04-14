@@ -149,6 +149,7 @@
 			/>
 
 			<SummaryView
+				summaryId={activeSummaryId}
 				{videoUrl}
 				{videoTitle}
 				{summaryText}

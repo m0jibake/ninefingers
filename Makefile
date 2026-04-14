@@ -11,12 +11,11 @@ dev-api:
 	go run . serve --no-browser
 
 dev-web:
-	cd web && npm run dev -- --open
+	cd web && source ~/.nvm/nvm.sh && nvm use 22 && npm run dev -- --open
 
 # Build production binary (frontend embedded in web/build)
 build:
-	cd web && npm run build
-	go build -o ninefingers .
+	./build.sh
 
 clean:
 	rm -f ninefingers

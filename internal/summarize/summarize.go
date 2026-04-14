@@ -177,16 +177,18 @@ func stripVTTTags(s string) string {
 // This allows callers to write to stdout (CLI) or send SSE events (web server).
 func StreamSummary(apiKey, model, userPrompt, captions string, onToken func(token string) error) error {
 	content := fmt.Sprintf("%s\n\n---CAPTIONS START---\n%s\n---CAPTIONS END---", userPrompt, captions)
+	return StreamChat(apiKey, model, []Message{{Role: "user", Content: content}}, onToken)
+}
 
+// StreamChat sends a pre-built message history to the NVIDIA LLM and streams the response.
+func StreamChat(apiKey, model string, messages []Message, onToken func(token string) error) error {
 	payload := ChatRequest{
 		Model:       model,
 		Temperature: 1,
 		TopP:        1,
 		MaxTokens:   16384,
 		Stream:      true,
-		Messages: []Message{
-			{Role: "user", Content: content},
-		},
+		Messages:    messages,
 	}
 
 	body, err := json.Marshal(payload)

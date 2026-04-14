@@ -10,15 +10,24 @@ import (
 	_ "modernc.org/sqlite"
 )
 
+type ChatMessage struct {
+	ID        string    `json:"id"`
+	SummaryID string    `json:"summary_id"`
+	Role      string    `json:"role"`
+	Content   string    `json:"content"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
 type Summary struct {
-	ID          string    `json:"id"`
-	VideoURL    string    `json:"video_url"`
-	VideoTitle  string    `json:"video_title"`
-	Model       string    `json:"model"`
-	Language    string    `json:"language"`
-	Prompt      string    `json:"prompt"`
-	SummaryText string    `json:"summary_text"`
-	CreatedAt   time.Time `json:"created_at"`
+	ID           string    `json:"id"`
+	VideoURL     string    `json:"video_url"`
+	VideoTitle   string    `json:"video_title"`
+	Model        string    `json:"model"`
+	Language     string    `json:"language"`
+	Prompt       string    `json:"prompt"`
+	SummaryText  string    `json:"summary_text"`
+	CaptionsText string    `json:"captions_text"`
+	CreatedAt    time.Time `json:"created_at"`
 }
 
 type Store struct {
@@ -61,26 +70,37 @@ func dataPath() (string, error) {
 }
 
 func migrate(db *sql.DB) error {
-	_, err := db.Exec(`
+	if _, err := db.Exec(`
 		CREATE TABLE IF NOT EXISTS summaries (
+			id            TEXT PRIMARY KEY,
+			video_url     TEXT NOT NULL,
+			video_title   TEXT NOT NULL DEFAULT '',
+			model         TEXT NOT NULL,
+			language      TEXT NOT NULL DEFAULT 'en',
+			prompt        TEXT NOT NULL DEFAULT '',
+			summary_text  TEXT NOT NULL DEFAULT '',
+			created_at    DATETIME NOT NULL DEFAULT (datetime('now'))
+		);
+		CREATE TABLE IF NOT EXISTS messages (
 			id          TEXT PRIMARY KEY,
-			video_url   TEXT NOT NULL,
-			video_title TEXT NOT NULL DEFAULT '',
-			model       TEXT NOT NULL,
-			language    TEXT NOT NULL DEFAULT 'en',
-			prompt      TEXT NOT NULL DEFAULT '',
-			summary_text TEXT NOT NULL DEFAULT '',
+			summary_id  TEXT NOT NULL,
+			role        TEXT NOT NULL,
+			content     TEXT NOT NULL,
 			created_at  DATETIME NOT NULL DEFAULT (datetime('now'))
-		)
-	`)
-	return err
+		);
+	`); err != nil {
+		return err
+	}
+	// Idempotent: add captions_text column to existing DBs
+	db.Exec(`ALTER TABLE summaries ADD COLUMN captions_text TEXT NOT NULL DEFAULT ''`)
+	return nil
 }
 
 func (s *Store) SaveSummary(summary *Summary) error {
 	_, err := s.db.Exec(`
-		INSERT INTO summaries (id, video_url, video_title, model, language, prompt, summary_text, created_at)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-	`, summary.ID, summary.VideoURL, summary.VideoTitle, summary.Model, summary.Language, summary.Prompt, summary.SummaryText, summary.CreatedAt)
+		INSERT INTO summaries (id, video_url, video_title, model, language, prompt, summary_text, captions_text, created_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+	`, summary.ID, summary.VideoURL, summary.VideoTitle, summary.Model, summary.Language, summary.Prompt, summary.SummaryText, summary.CaptionsText, summary.CreatedAt)
 	return err
 }
 
@@ -114,9 +134,9 @@ func (s *Store) ListSummaries() ([]Summary, error) {
 func (s *Store) GetSummary(id string) (*Summary, error) {
 	var sum Summary
 	err := s.db.QueryRow(`
-		SELECT id, video_url, video_title, model, language, prompt, summary_text, created_at
+		SELECT id, video_url, video_title, model, language, prompt, summary_text, captions_text, created_at
 		FROM summaries WHERE id = ?
-	`, id).Scan(&sum.ID, &sum.VideoURL, &sum.VideoTitle, &sum.Model, &sum.Language, &sum.Prompt, &sum.SummaryText, &sum.CreatedAt)
+	`, id).Scan(&sum.ID, &sum.VideoURL, &sum.VideoTitle, &sum.Model, &sum.Language, &sum.Prompt, &sum.SummaryText, &sum.CaptionsText, &sum.CreatedAt)
 	if err == sql.ErrNoRows {
 		return nil, nil
 	}
@@ -129,4 +149,33 @@ func (s *Store) GetSummary(id string) (*Summary, error) {
 func (s *Store) DeleteSummary(id string) error {
 	_, err := s.db.Exec(`DELETE FROM summaries WHERE id = ?`, id)
 	return err
+}
+
+func (s *Store) SaveMessage(m *ChatMessage) error {
+	_, err := s.db.Exec(`
+		INSERT INTO messages (id, summary_id, role, content, created_at)
+		VALUES (?, ?, ?, ?, ?)
+	`, m.ID, m.SummaryID, m.Role, m.Content, m.CreatedAt)
+	return err
+}
+
+func (s *Store) ListMessages(summaryID string) ([]ChatMessage, error) {
+	rows, err := s.db.Query(`
+		SELECT id, summary_id, role, content, created_at
+		FROM messages WHERE summary_id = ? ORDER BY created_at ASC
+	`, summaryID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var msgs []ChatMessage
+	for rows.Next() {
+		var m ChatMessage
+		if err := rows.Scan(&m.ID, &m.SummaryID, &m.Role, &m.Content, &m.CreatedAt); err != nil {
+			return nil, err
+		}
+		msgs = append(msgs, m)
+	}
+	return msgs, rows.Err()
 }

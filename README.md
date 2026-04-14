@@ -9,6 +9,7 @@ Summarize any YouTube video instantly. Fetches captions and streams an AI summar
 1. Get an API key from [NVIDIA](https://build.nvidia.com)
 2. Create `.env` and set `NVIDIA_API_KEY=your_key_here`
 3. Install `yt-dlp`: `pip install yt-dlp`
+4. Node.js 22+ is required for building the frontend (uses `~/.nvm/nvm.sh` if available)
 
 ## Usage
 
@@ -35,3 +36,9 @@ make dev
 - **Embedded video** — watch alongside the summary
 - **History** — all past summaries saved and searchable
 - **Multiple models** — GLM-4.7, Kimi, Llama, DeepSeek, Gemma
+
+## Technologies
+
+- **Backend**: Go 1.25+, Cobra (CLI), SQLite (persistence)
+- **Frontend**: SvelteKit, TypeScript, SSE streaming, Marked (markdown)
+- **Infrastructure**: yt-dlp (caption extraction), NVIDIA NIM LLM API

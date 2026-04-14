@@ -17,9 +17,13 @@ Example:
   ninefingers "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
   ninefingers "https://www.youtube.com/watch?v=dQw4w9WgXcQ" --model "moonshotai/kimi-k2-instruct"
   ninefingers "https://www.youtube.com/watch?v=dQw4w9WgXcQ" --language es
-  ninefingers "https://www.youtube.com/watch?v=dQw4w9WgXcQ" --prompt "list the key takeaways as bullet points"`,
-	Args: cobra.ExactArgs(1),
+  ninefingers "https://www.youtube.com/watch?v=dQw4w9WgXcQ" --prompt "list the key takeaways as bullet points"
+  ninefingers serve`,
+	Args: cobra.MaximumNArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) == 0 {
+			return cmd.Help()
+		}
 		url := args[0]
 		model, _ := cmd.Flags().GetString("model")
 		language, _ := cmd.Flags().GetString("language")
