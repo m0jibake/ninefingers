@@ -2,7 +2,7 @@
 
 # Run both Go API and SvelteKit dev server concurrently
 dev:
-	@echo "Starting Go API on :8080 and SvelteKit dev on :5173..."
+	@echo "Starting Go API on :8081 and SvelteKit dev on :5173..."
 	@$(MAKE) dev-api &
 	@$(MAKE) dev-web
 	@wait

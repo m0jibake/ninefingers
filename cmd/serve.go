@@ -47,7 +47,7 @@ var serveCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(serveCmd)
-	serveCmd.Flags().IntP("port", "P", 8080, "Port to listen on")
+	serveCmd.Flags().IntP("port", "P", 8081, "Port to listen on")
 	serveCmd.Flags().Bool("no-browser", false, "Don't open browser automatically")
 }
 
