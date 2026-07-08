@@ -15,7 +15,7 @@ then sends them to an LLM to produce a clean summary.
 
 Example:
   ninefingers "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
-  ninefingers "https://www.youtube.com/watch?v=dQw4w9WgXcQ" --model "moonshotai/kimi-k2-instruct"
+  ninefingers "https://www.youtube.com/watch?v=dQw4w9WgXcQ" --model "z-ai/glm-5.2"
   ninefingers "https://www.youtube.com/watch?v=dQw4w9WgXcQ" --language es
   ninefingers "https://www.youtube.com/watch?v=dQw4w9WgXcQ" --prompt "list the key takeaways as bullet points"
   ninefingers serve`,
@@ -42,7 +42,7 @@ func Execute() {
 }
 
 func init() {
-	rootCmd.Flags().StringP("model", "m", "z-ai/glm4.7", "LLM model to use for summarization")
+	rootCmd.Flags().StringP("model", "m", "z-ai/glm-5.2", "LLM model to use for summarization")
 	rootCmd.Flags().StringP("language", "l", "en", "Caption language code (e.g. en, es, fr)")
 	rootCmd.Flags().StringP("prompt", "p", "Give me a thorough summary of this YouTube video based on its captions.", "Custom instruction to send to the LLM alongside the captions")
 	rootCmd.Flags().BoolP("verbose", "v", false, "Logs and warnings verbosity in terminal.")

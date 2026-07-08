@@ -42,11 +42,8 @@
 		<label class="option">
 			<span>Model</span>
 			<select bind:value={model} disabled={loading}>
-				<option value="z-ai/glm4.7">GLM-4.7 (default)</option>
-				<option value="moonshotai/kimi-k2-instruct">Kimi K2</option>
-				<option value="meta/llama-3.3-70b-instruct">Llama 3.3 70B</option>
-				<option value="deepseek-ai/deepseek-r1">DeepSeek R1</option>
-				<option value="google/gemma-3-27b-it">Gemma 3 27B</option>
+				<option value="z-ai/glm-5.2">GLM-5.2 (default)</option>
+				<option value="mistralai/mistral-small-4-119b-2603">Mistral Small 4 119B</option>
 			</select>
 		</label>
 		<label class="option">

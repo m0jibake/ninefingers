@@ -62,7 +62,9 @@ func FetchCaptions(videoURL, language string, verbose bool) (string, error) {
 
 	args := []string{
 		"--no-check-cert",
-		"--write-subs",
+		"--no-check-formats",
+		"--ignore-errors",
+		"--extractor-args", "youtube:player_client=android",
 		"--write-subs",
 		"--write-auto-subs",
 		"--sub-langs", language,
@@ -74,20 +76,28 @@ func FetchCaptions(videoURL, language string, verbose bool) (string, error) {
 
 	cmd := exec.Command("yt-dlp", args...)
 
+	var stderrBuf bytes.Buffer
 	if verbose {
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 	} else {
 		cmd.Stdout = io.Discard
-		cmd.Stderr = io.Discard
+		cmd.Stderr = &stderrBuf
 	}
 
-	if err := cmd.Run(); err != nil {
-		return "", fmt.Errorf("yt-dlp failed: %w", err)
-	}
+	runErr := cmd.Run()
 
+	// yt-dlp may exit non-zero due to format-selection failures (e.g. SABR streaming)
+	// even after successfully writing subtitle files. Check for subtitles first.
 	vttFile, err := findVTTFile(tmpDir)
 	if err != nil {
+		// No subtitles written — surface the real yt-dlp error.
+		if runErr != nil {
+			if msg := strings.TrimSpace(stderrBuf.String()); msg != "" {
+				return "", fmt.Errorf("yt-dlp failed: %w\n%s", runErr, msg)
+			}
+			return "", fmt.Errorf("yt-dlp failed: %w", runErr)
+		}
 		return "", err
 	}
 

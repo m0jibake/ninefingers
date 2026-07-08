@@ -92,7 +92,7 @@ func (s *Server) handleSummarize(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	if req.Model == "" {
-		req.Model = "z-ai/glm4.7"
+		req.Model = "z-ai/glm-5.2"
 	}
 	if req.Language == "" {
 		req.Language = "en"

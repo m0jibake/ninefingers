@@ -15,7 +15,7 @@ make dev
 ./ninefingers serve
 
 # Run CLI summarization
-./ninefingers "https://www.youtube.com/watch?v=..." --model "moonshotai/kimi-k2-instruct" -v
+./ninefingers "https://www.youtube.com/watch?v=..." --model "z-ai/glm-5.2" -v
 
 # Clean build artifacts
 make clean
@@ -57,4 +57,4 @@ Events sent in order: `status` → `meta` (JSON with `id`, `video_title`) → `t
 
 ### Default model
 
-`z-ai/glm4.7` — used when no `--model` flag is provided. Other supported: `moonshotai/kimi-k2-instruct`, Llama, DeepSeek, Gemma variants (all via NVIDIA NIM).
+`z-ai/glm-5.2` — used when no `--model` flag is provided. Other supported: `mistralai/mistral-small-4-119b-2603` (all via NVIDIA NIM).

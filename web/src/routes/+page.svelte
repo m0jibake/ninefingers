@@ -11,7 +11,7 @@
 
 	// Input state
 	let url = $state('');
-	let model = $state('z-ai/glm4.7');
+	let model = $state('z-ai/glm-5.2');
 	let language = $state('en');
 	let prompt = $state('Give me a thorough summary of this YouTube video based on its captions.');
 
